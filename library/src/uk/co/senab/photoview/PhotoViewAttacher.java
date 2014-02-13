@@ -358,6 +358,10 @@ public class PhotoViewAttacher implements IPhotoView, View.OnTouchListener,
 
     @Override
     public final void onDrag(float dx, float dy) {
+        if (mScaleDragDetector.isScaling()) {
+            return; // Do not drag if we are already scaling
+        }
+
         if (DEBUG) {
             LogManager.getLogger().d(LOG_TAG,
                     String.format("onDrag: dx: %.2f. dy: %.2f", dx, dy));
@@ -376,13 +380,20 @@ public class PhotoViewAttacher implements IPhotoView, View.OnTouchListener,
          * on, and the direction of the scroll (i.e. if we're pulling against
          * the edge, aka 'overscrolling', let the parent take over).
          */
-        if (mAllowParentInterceptOnEdge && !mScaleDragDetector.isScaling()) {
+        ViewParent parent = imageView.getParent();
+        if (mAllowParentInterceptOnEdge) {
             if (mScrollEdge == EDGE_BOTH
                     || (mScrollEdge == EDGE_LEFT && dx >= 1f)
                     || (mScrollEdge == EDGE_RIGHT && dx <= -1f)) {
-                ViewParent parent = imageView.getParent();
                 if (null != parent)
                     parent.requestDisallowInterceptTouchEvent(false);
+            } else {
+                if (null != parent)
+                    parent.requestDisallowInterceptTouchEvent(true);
+            }
+        } else {
+            if (null != parent) {
+                parent.requestDisallowInterceptTouchEvent(true);
             }
         }
     }
