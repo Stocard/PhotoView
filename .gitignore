@@ -28,6 +28,5 @@ proguard.cfg
 
 #Gradle
 .gradle
-gradle
 build
 
